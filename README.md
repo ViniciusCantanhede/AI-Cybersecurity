@@ -35,6 +35,17 @@ Este é o segundo projeto desenvolvido como parte do curso **[Inteligência Arti
 Este projeto realiza uma **análise exploratória de dados (EDA)** em logs fictícios de um servidor web para identificar **padrões de acesso suspeitos** e **ações maliciosas**.  
 Ao final, um modelo de **machine learning** é treinado para prever e classificar automaticamente esses acessos.
 
+----
+
+# Projeto 4 - IA para Geração de Relatório de Segurança 📊
+
+Sistema automatizado de análise de logs de servidores web com Inteligência Artificial para identificação de anomalias e geração de relatórios de segurança.
+
+## 📋 Sobre o Projeto
+
+Este projeto utiliza IA (Ollama com modelo Gemma3) para analisar logs de servidores web, identificar possíveis tentativas de ataque, anomalias de segurança e gerar automaticamente um relatório completo em formato Word (.docx) com recomendações de segurança.
+
+
 O objetivo principal é identificar **tentativas de ataque de força bruta**, analisando o comportamento de diferentes endereços IP, os métodos de requisição (`POST`, `GET`) e os códigos de status HTTP (especialmente `401 - Unauthorized`).
 
 ---
