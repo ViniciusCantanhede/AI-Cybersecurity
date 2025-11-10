@@ -64,6 +64,4 @@ O objetivo do projeto é:
 - Comparar técnicas de balanceamento e algoritmos especializados  
 
 
-O objetivo principal é identificar **tentativas de ataque de força bruta**, analisando o comportamento de diferentes endereços IP, os métodos de requisição (`POST`, `GET`) e os códigos de status HTTP (especialmente `401 - Unauthorized`).
-
 ---
