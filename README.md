@@ -45,6 +45,24 @@ Sistema automatizado de análise de logs de servidores web com Inteligência Art
 
 Este projeto utiliza IA (Ollama com modelo Gemma3) para analisar logs de servidores web, identificar possíveis tentativas de ataque, anomalias de segurança e gerar automaticamente um relatório completo em formato Word (.docx) com recomendações de segurança.
 
+---- 
+
+# Projeto 5: 🔎 Detecção de Transações Fraudulentas em Base de Dados Desbalanceada
+
+Este projeto aborda o problema de **detecção de fraudes** em transações financeiras usando técnicas de *Machine Learning*, com foco especial no tratamento de **bases de dados extremamente desbalanceadas**.  
+Mais de **98% das transações são normais**, enquanto menos de **2% representam fraudes**, tornando o aprendizado supervisionado tradicional ineficiente sem técnicas adicionais.
+
+---
+
+## 📌 Objetivo
+
+O objetivo do projeto é:
+
+- Analisar um dataset altamente desbalanceado  
+- Testar estratégias para lidar com esse cenário  
+- Treinar modelos capazes de identificar transações fraudulentas  
+- Comparar técnicas de balanceamento e algoritmos especializados  
+
 
 O objetivo principal é identificar **tentativas de ataque de força bruta**, analisando o comportamento de diferentes endereços IP, os métodos de requisição (`POST`, `GET`) e os códigos de status HTTP (especialmente `401 - Unauthorized`).
 
