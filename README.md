@@ -65,3 +65,8 @@ O objetivo do projeto é:
 
 
 ---
+
+# Projeto 5: 🔐 Detecção de Ameaças em Dispositivos IoT  
+Análise de Dados Reais com o Dataset UNSW-NB15
+
+Este projeto realiza uma análise completa sobre um conjunto de dados real utilizado para identificar **ataques cibernéticos em dispositivos IoT**. O foco principal é explorar os dados, tratar o desbalanceamento das classes e propor um modelo de **classificação multiclasse** capaz de detectar diferentes tipos de ameaças.
