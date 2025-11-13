@@ -70,3 +70,19 @@ O objetivo do projeto é:
 Análise de Dados Reais com o Dataset UNSW-NB15
 
 Este projeto realiza uma análise completa sobre um conjunto de dados real utilizado para identificar **ataques cibernéticos em dispositivos IoT**. O foco principal é explorar os dados, tratar o desbalanceamento das classes e propor um modelo de **classificação multiclasse** capaz de detectar diferentes tipos de ameaças.
+
+---
+
+# Projeto 6 🔒 Detector de Ataques Botnet com IA
+
+Sistema de detecção de ataques de botnet utilizando aprendizado semi-supervisionado com Flask para deploy web.
+
+## 📋 Sobre o Projeto
+
+Este projeto utiliza técnicas de **aprendizado semi-supervisionado** (Label Spreading) para identificar e prever ataques de botnet em redes, combinando dados rotulados e não rotulados para aumentar a precisão do modelo. O projeto inclui:
+
+- Criação e análise exploratória de dados sintéticos
+- Pré-processamento e normalização de features
+- Treinamento de modelo com algoritmo Label Spreading
+- Aplicação web Flask para detecção em tempo real
+- Interface HTML intuitiva para entrada de dados
