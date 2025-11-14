@@ -66,14 +66,14 @@ O objetivo do projeto é:
 
 ---
 
-# Projeto 5: 🔐 Detecção de Ameaças em Dispositivos IoT  
+# Projeto 6: 🔐 Detecção de Ameaças em Dispositivos IoT  
 Análise de Dados Reais com o Dataset UNSW-NB15
 
 Este projeto realiza uma análise completa sobre um conjunto de dados real utilizado para identificar **ataques cibernéticos em dispositivos IoT**. O foco principal é explorar os dados, tratar o desbalanceamento das classes e propor um modelo de **classificação multiclasse** capaz de detectar diferentes tipos de ameaças.
 
 ---
 
-# Projeto 6 🔒 Detector de Ataques Botnet com IA
+# Projeto 7: 🔒 Detector de Ataques Botnet com IA
 
 Sistema de detecção de ataques de botnet utilizando aprendizado semi-supervisionado com Flask para deploy web.
 
@@ -86,3 +86,9 @@ Este projeto utiliza técnicas de **aprendizado semi-supervisionado** (Label Spr
 - Treinamento de modelo com algoritmo Label Spreading
 - Aplicação web Flask para detecção em tempo real
 - Interface HTML intuitiva para entrada de dados
+
+---
+
+# Projeto 8: Fine-Tuning de LLM para Detecção de Anomalias de Tráfego de Rede
+
+Este projeto demonstra o processo de fine-tuning de um modelo de linguagem grande (LLM), especificamente o `bert-base-uncased`, para a tarefa de detecção de anomalias em tráfego de rede. O notebook `Fine_Tuning.ipynb` guia através de todas as etapas, desde o carregamento e pré-processamento dos dados até o treinamento, avaliação e previsão com o modelo.
