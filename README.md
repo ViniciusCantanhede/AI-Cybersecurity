@@ -92,3 +92,11 @@ Este projeto utiliza técnicas de **aprendizado semi-supervisionado** (Label Spr
 # Projeto 8: Fine-Tuning de LLM para Detecção de Anomalias de Tráfego de Rede
 
 Este projeto demonstra o processo de fine-tuning de um modelo de linguagem grande (LLM), especificamente o `bert-base-uncased`, para a tarefa de detecção de anomalias em tráfego de rede. O notebook `Fine_Tuning.ipynb` guia através de todas as etapas, desde o carregamento e pré-processamento dos dados até o treinamento, avaliação e previsão com o modelo.
+
+---
+
+# Projeto 9: Detecção e Prevenção de Ataques SQL Injection
+
+## 📋 Descrição do Projeto
+
+Este projeto implementa um **modelo de Machine Learning preditivo** capaz de detectar e prevenir ataques cibernéticos de **SQL Injection**. O objetivo é classificar consultas SQL como seguras (0) ou maliciosas (1), contribuindo para a segurança de aplicações web e sistemas de banco de dados.
