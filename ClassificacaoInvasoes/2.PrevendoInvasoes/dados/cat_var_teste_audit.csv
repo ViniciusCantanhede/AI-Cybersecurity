@@ -1,5 +1,0 @@
-,N,NMISS,MODE,FREQ,PERCENT
-protocol_type,22500,0,tcp,18843,83.75
-service,22500,0,http,7837,34.83
-flag,22500,0,SF,14845,65.98
-attack,22500,0,normal,9694,43.08
