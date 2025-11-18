@@ -1,0 +1,187 @@
+RELATÓRIO DE ANÁLISE DE VULNERABILIDADES
+========================================
+
+TÓPICO: Segurança em formulários de login no site OWASP Juice Shop (https://owasp.org/www-project-juice-shop/)
+
+Relatório de Segurança — Formulários de Autenticação (OWASP Juice Shop)
+Data: 2025-11-18
+Autor: Análise técnica baseada em revisão das descobertas fornecidas
+
+1. Sumário Executivo
+O OWASP Juice Shop é uma aplicação propositalmente vulnerável usada para treino. A análise identificou múltiplas classes de vulnerabilidades relacionadas ao formulário de login e fluxos de autenticação: injeção NoSQL (bypass de autenticação), autenticação quebrada (senhas fracas e fluxos de reset), enumeração de contas, credenciais expostas, fraquezas em MFA, gerenciamento de sessão fraco e validações apenas no cliente. As descobertas incluem vulnerabilidades de risco crítico e alto que permitem takeover de contas e comprometimento da aplicação. Recomenda-se remediação imediata das vulnerabilidades críticas (NoSQL injection e credenciais expostas) e aplicação de controles compensatórios até a correção completa.
+
+2. Escopo e Metodologia
+- Escopo: Formulários de login, fluxo “esqueci minha senha”, MFA, gerenciamento de sessão, lógica client-side relacionada à autenticação no OWASP Juice Shop (exemplos e desafios públicos).
+- Metodologia: revisão da análise categorizada fornecida; priorização por impacto/probabilidade; recomendações práticas com PoC representativos e medidas de mitigação (baseadas em OWASP WSTG e Top 10).
+
+3. Resumo das Vulnerabilidades (por item)
+Para cada vulnerabilidade: descrição, nível de risco, impacto, probabilidade, evidência/exemplo, PoC curto, recomendações técnicas.
+
+3.1 NoSQL Injection / Injection em campos de autenticação
+- Nível de risco: Crítico
+- Impacto: autenticação bypass (login como qualquer usuário), exfiltração/modificação de dados, takeover de contas com privilégios.
+- Probabilidade: alta em backends Node.js/Mongo que aceitam JSON/objetos sem validação.
+- Evidência / Exemplos (Juice Shop): desafios “Login Admin”, “Login Bender”, “Login Jim”, “NoSQL Manipulation”. Payloads típicos: {"$ne": ""}, {"$gt": ""}.
+- PoC curto: submeter nos campos username/password um payload NoSQL (ex.: {"$ne": ""}) e observar autenticação bem-sucedida sem credenciais válidas.
+- Recomendações técnicas:
+  - Validação estrita de tipo/schema (aceitar apenas strings simples para username/password). Usar JSON Schema, Joi, express-validator ou similar.
+  - Evitar passar input do usuário diretamente como objetos de consulta MongoDB. Sempre usar queries parametrizadas (e.g., Model.findOne({ username: userInput }) com userInput validado/escapado).
+  - Rejeitar caracteres/operadores de consulta (tokens que iniciem por $) no input ou sanitizar com bibliotecas como mongo-sanitize.
+  - Implementar WAF/IDS com regras para NoSQL injection como defesa em profundidade.
+  - Revisão de código e testes automatizados que simulem injeções.
+- Verificação pós-correção: testar com payloads NoSQL conhecidos e variações; incluir fuzzing automatizado.
+
+CVSSv3 estimado: 9.8 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)
+
+3.2 Broken Authentication — Senhas fracas e fluxos de reset vulneráveis
+- Nível de risco: Alto
+- Impacto: takeover de contas por força bruta/credential stuffing ou abuso do fluxo de recuperação.
+- Probabilidade: alta quando não há políticas/controls.
+- Evidência / Exemplos (Juice Shop): “Password Strength”, “Reset Bender's/Bjoern's/Jim's Password”.
+- PoC curto: criar conta com senha fraca; usar “esqueci minha senha” para verificar se token/link pode ser explorado ou é previsível.
+- Recomendações técnicas:
+  - Política de senha: mínimo de caracteres (ex.: >=12), checks por blacklist e checagem contra bases de senhas vazadas (Have I Been Pwned API).
+  - Hash seguro de senhas (Argon2id preferível; bcrypt com parâmetros fortes se Argon2 não disponível).
+  - Tokens de reset: gerar com crypto.randomBytes (secure), armazenar hash do token no servidor, tornar de uso único, expiração curta (ex.: 1 hora) e invalidar após uso.
+  - Rate limiting/lockout progressivo, CAPTCHAs graduais e alertas por e-mail em tentativas de reset.
+  - Não revelar existência de conta nas mensagens de reset (respostas genéricas).
+- Verificação pós-correção: tentativa de reset para usuário inexistente/real; análise de token no tráfego; brute-force controlado.
+
+CVSSv3 estimado: 8.5 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N)
+
+3.3 Credenciais expostas / hardcoded / default credentials
+- Nível de risco: Alto
+- Impacto: acesso imediato se credenciais expostas em frontend, assets, repositório ou endpoints.
+- Probabilidade: moderada-alta em projetos com secrets no cliente ou repositórios públicos.
+- Evidência / Exemplos (Juice Shop): desafios apontando credenciais em JS, arquivos públicos, endpoints.
+- PoC curto: localizar strings/credentials em assets públicos ou código JS e tentar login com elas.
+- Recomendações técnicas:
+  - Remover segredos do código cliente; mover para secret manager / vault (HashiCorp Vault, AWS Secrets Manager).
+  - Varredura automática de repositórios (scanners de secrets), políticas CI que bloqueiem commits com segredos.
+  - Rotação imediata de credenciais expostas e notificação/mitigação de impacto.
+- Verificação pós-correção: scans automáticos e revisão de deploys; confirmar ausência de segredos em bundles públicos.
+
+CVSSv3 estimado: 8.0–9.0 (varia conforme privilégio associado às credenciais)
+
+3.4 Fraquezas na autenticação multifator / recuperação de conta
+- Nível de risco: Alto
+- Impacto: bypass do segundo fator ou recuperação de conta indevida, levando a takeover mesmo com MFA habilitado.
+- Probabilidade: moderada (depende da implementação).
+- Evidência / Exemplos (Juice Shop): desafios relacionados a 2FA e resets.
+- PoC curto: manipular parâmetros de fluxo de MFA (pular etapa ou submeter códigos previsíveis).
+- Recomendações técnicas:
+  - Implementar TOTP/HOTP segundo RFC; usar bibliotecas comprovadas; armazenar secrets MFA protegidos.
+  - Vincular MFA à sessão/usuário; não permitir alteração sensível sem reautenticação forte.
+  - Proteger endpoints de recuperação (rate limiting, verificação de propriedade por e-mail).
+  - Oferecer backup codes de uso único e forçar re-verificação de e-mail para mudanças sensíveis.
+- Verificação pós-correção: testes de bypass, fuzzing nos endpoints de MFA.
+
+CVSSv3 estimado: 7.5 (AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N) — varia conforme fator de autenticação implementado
+
+3.5 Controle de sessão / session management fraco
+- Nível de risco: Alto (pode ser Crítico dependendo da falha)
+- Impacto: se sessão for sequestrada ou previsível, atacante assume conta do usuário.
+- Probabilidade: moderada em configurações incorretas.
+- Evidência / Exemplos (Juice Shop): possíveis tokens de sessão previsíveis, cookies sem Secure/HttpOnly.
+- PoC curto: inspecionar cookies; tentar fixation/regeneração de session id inexistente.
+- Recomendações técnicas:
+  - Cookies: HttpOnly, Secure, SameSite=Strict/ Lax conforme contexto.
+  - Regenerar session id após autenticação e invalidar sessão no logout.
+  - Expiração de sessão curta (timeout inatividade) e mecanismo de refresh token seguro se for o caso.
+  - Proteções CSRF e binding de sessão a IP/user-agent (com cuidado para não quebrar UX).
+  - Monitoramento de sessões anômalas e alerta de atividades suspeitas.
+- Verificação pós-correção: testes de fixation, replicação de sessão e análise de flags em cookies.
+
+CVSSv3 estimado: 8.0 (varia conforme exploitabilidade)
+
+3.6 Account enumeration (mensagens informativas e timing)
+- Nível de risco: Médio
+- Impacto: mapeamento de contas válidas possibilita brute-force e engenharia social.
+- Probabilidade: alta se respostas e timings diferem.
+- Evidência / Exemplos (Juice Shop): feedbacks diferenciados entre usuário inexistente e senha inválida.
+- PoC curto: enviar variados usernames e comparar respostas HTTP e tempo de resposta.
+- Recomendações técnicas:
+  - Mensagens genéricas (ex.: “se as credenciais estiverem corretas, você receberá instruções por e-mail”).
+  - Normalizar tempo de resposta e utilizar rate limiting/CAPTCHA.
+  - Monitorar e bloquear fontes com muitas tentativas.
+- Verificação pós-correção: teste automatizado de enumeração por ferramenta (timing and response content).
+
+CVSSv3 estimado: 5.3
+
+3.7 Bypass via lógica do front-end / validações apenas no cliente
+- Nível de risco: Médio a Alto (dependendo do que é contornado)
+- Impacto: contornar validações client-side pode permitir abuso de lógica de negócios, criação de condições de segurança.
+- Probabilidade: alta quando servidor confia em parâmetros do cliente.
+- Evidência / Exemplos (Juice Shop): parâmetros manipuláveis, validações client-only.
+- PoC curto: interceptar/alterar requests (Burp/curl) e enviar valores que front-end normalmente bloquearia.
+- Recomendações técnicas:
+  - Mover toda lógica crítica para o servidor; sempre validar e autorizar requests server-side.
+  - Rate limiting, checagens de autorização e validação de parâmetros no backend.
+  - Testes de API e fuzzing para detectar parâmetros aceitos indevidamente.
+- Verificação pós-correção: testes de integração e fuzzing de endpoints.
+
+CVSSv3 estimado: 6.5–7.5
+
+4. Priorização de Remediação (Plano de Ação)
+Ordem recomendada com prazo sugerido:
+
+Imediato (1–2 semanas)
+- Corrigir NoSQL injection (entrada do usuário nunca deve ser tratada como query object). Bloquear operadores ($) no input e aplicar validação de schema.
+- Remover/rotacionar credenciais expostas e bloquear repositórios públicos ou arquivos públicos contendo segredos.
+- Aplicar rate limiting global e CAPTCHAs produzidos progressivamente nas rotas de autenticação/reset.
+- Implementar monitoramento/alertas para tentativas anômalas de autenticação.
+
+Curto prazo (2–6 semanas)
+- Implementar política de senhas forte e checks contra senhas vazadas.
+- Melhorar fluxo de reset: tokens criptográficos, hash de tokens no servidor, expiração e validação stricte.
+- Harden cookies (HttpOnly, Secure, SameSite), regeneração de session id após login.
+- Revisões de código focadas em autenticação e injeção.
+
+Médio prazo (6–12 semanas)
+- Implementar MFA robusto (TOTP) com vinculação segura.
+- Deploy de WAF com regras específicas para NoSQL/Injection e proteção básica contra enumeração.
+- Automatizar scans de secrets no pipeline CI/CD.
+
+Longo prazo (3 meses+)
+- Testes de penetração regulares e integração de testes de segurança no pipeline (SAST/DAST).
+- Treinamento de desenvolvedores em OWASP Top 10, NoSQL injection e práticas de segredo.
+- Arquitetura de logs/monitoramento para detecção precoce de takeover de contas.
+
+5. Recomendações Operacionais e Compensatórias
+- Implementar bloqueio progressivo de conta + notificação por e-mail quando várias tentativas falharem.
+- Limitar tentativas por IP e por conta, e aplicar IP reputation/WAF.
+- Fornecer alertas por e-mail ao usuário sobre mudanças de senha/alterações sensíveis.
+- Registrar e reter logs de autenticação com detecção de anomalias e playbook de resposta a incidentes.
+- Aplicar defesa em profundidade: WAF + validação no servidor + logs/monitoramento.
+
+6. Checklist de Testes Pós-Remediação (para validar correções)
+- Teste NoSQL injection com payloads conhecidos e fuzzing (ex.: {"$ne": ""}, {"$gt": ""}, payloads aninhados).
+- Teste de policy de senha (criação e alteração) e checagem contra senhas vazadas.
+- Teste do fluxo “esqueci minha senha”: validade do token, único uso, não revelação de existência de conta.
+- Testes de enumeração (resposta e timing) automatizados.
+- Inspeção de cookies e testes de session fixation/regeneration.
+- Testes de MFA para confirmar impossibilidade de bypass e validade dos códigos.
+- Testes de penetração de alto nível e DAST/SAST.
+
+7. Evidências e Exemplos (PoC representativos)
+- Exemplo de payload NoSQL (PoC educativo):
+  - Inserir no campo username: {"$ne": ""} ou {"$gt": ""} (quando backend interpretar input como objeto de query) — se autenticado, confirma vulnerabilidade.
+- Exemplo de enumeração:
+  - Enviar login com user inexistente e com user existente; comparar mensagens e tempo de resposta; diferenças indicam enumeração.
+- Exemplo de credencial exposta:
+  - Procurar em assets JS strings que se pareçam com “admin:password123” ou endpoints /config contendo segredos.
+
+Observação: PoC devem ser executados apenas contra instâncias autorizadas (ex.: ambiente de treino como Juice Shop local ou ambiente de teste autorizado).
+
+8. Referências
+- OWASP Web Security Testing Guide — Authentication Testing
+- OWASP Top 10 — A07: Identification and Authentication Failures
+- Boas práticas: OWASP Cheat Sheets (Authentication, Password Storage, Session Management, NoSQL Injection)
+
+9. Conclusão
+As vulnerabilidades identificadas têm impacto direto na confidencialidade e integridade de contas de usuário. A prioridade imediata é mitigar NoSQL injection e remover/rotacionar credenciais expostas, aplicando controles compensatórios (rate limiting, WAF, monitoramento). Em seguida, endurecer políticas de senha, gerir sessões corretamente e melhorar fluxos de recuperação/MFA. Recomenda-se plano de correção com prazos definidos, testes de verificação pós-correção e integração de testes de segurança contínuos.
+
+Se desejar, posso:
+- Gerar blocos detalhados por vulnerabilidade com evidência formatada, PoC passo-a-passo adaptada a uma instância local do Juice Shop e um CVSS exato.
+- Fornecer payloads de teste e scripts Repeater/Intruder (Burp) para os cenários listados.
+- Preparar um plano de remediação com tarefas técnicas específicas para times de desenvolvimento e operações.
