@@ -100,3 +100,17 @@ Este projeto demonstra o processo de fine-tuning de um modelo de linguagem grand
 ## 📋 Descrição do Projeto
 
 Este projeto implementa um **modelo de Machine Learning preditivo** capaz de detectar e prevenir ataques cibernéticos de **SQL Injection**. O objetivo é classificar consultas SQL como seguras (0) ou maliciosas (1), contribuindo para a segurança de aplicações web e sistemas de banco de dados.
+
+---
+
+# Projeto 10: Time de Agentes de IA para Teste de Vulnerabilidades
+
+Um sistema multi-agente baseado em **LangGraph** que utiliza inteligência artificial para realizar análise automatizada de vulnerabilidades de segurança, pesquisa de ameaças e geração de relatórios técnicos.
+
+## 📋 Visão Geral
+
+Este projeto implementa um workflow automatizado com três agentes especializados que trabalham em conjunto para:
+
+1. **Pesquisador** - Busca informações sobre vulnerabilidades usando a API Tavily
+2. **Analista de Segurança** - Avalia e categoriza vulnerabilidades por nível de risco
+3. **Redator Técnico** - Elabora relatório detalhado com recomendações de mitigação
